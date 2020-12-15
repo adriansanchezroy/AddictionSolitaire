@@ -62,40 +62,22 @@ def table(contenu): return '<table>' + contenu + '</table>'
 
 
 # Variable pour le style css
-styleHTML = """
-<style> 
-#jeu table {
-    float: none; 
-} 
-
-#jeu table td { 
-    border: 0;
-    padding: 1px 2px;
-    height: auto;
-}
-#jeu table td img {
-    height: auto; 
-}
-</style>
-"""
+styleHTML = """ <style> #jeu table
+{ float: none; } #jeu table td { border: 0; padding: 1px 2px; height: auto; }
+#jeu table td img { height: auto; } </style>"""
 
 
 def boutonsHTML():
     global nbreShuffle
     if nbreShuffle > 0:
-        boutons = """
-        <div id="message">Vous pouvez encore
-        <button onclick="brassage();">brasser les cartes </button>
-        """ + str(nbreShuffle) + """
-            "fois<br><button onclick="init()">Nouvelle partie </button></div>
-        """
+        boutons = """<div id='message'>Vous pouvez encore
+           <button onclick='brassage();'>brasser les cartes </button>
+            str(nbreShuffle)
+            fois<br><button onclick="init();">Nouvelle partie</button></div>
 
     else:
-        boutons = """
-        <div id="message">Vous ne pouvez plus brasser les cartes
-        <br>
-        <button onclick="init();">Nouvelle partie</button></div>
-        """
+        boutons = '<div id="message">Vous ne pouvez plus brasser les cartes' +\
+            '<br><button onclick="init();">Nouvelle partie</button></div>'
     return boutons
 
 
@@ -127,7 +109,7 @@ def afficherGrille():
 
     # Genère le HTML qui affiche les cartes rangée par rangée
     for i in range(4):
-        # Ajoute une rangée à la table dans la chaine html
+        # Ajoute un saut de ligne par rangée à la chaine html
         mainHtml += '<tr>'
 
         # Genere le HTML qui affiche les cartes dans une rangee
@@ -138,17 +120,15 @@ def afficherGrille():
 
             # Cas spécial pour les as qui doivent être retirés
             if indexVal not in [0, 1, 2, 3] and indexVal != 0:
-                mainHtml += ('<td id="case' + str(index) + '" '
-                             + 'onclick="clic(' + str(index) + ')">'
-                             + '<img src="' + str(tabSVG[indexVal]) + '">'
-                             + ' </td>')
+                mainHtml += '<td id="case' + str(index) + '" onclick="clic(' +\
+                    str(index) +\
+                    ')' + '"><img src="' + str(tabSVG[indexVal]) + '"></td>'
 
-               #'" onclick="clic(' + str(index) + ')"'
+             #'" onclick="clic(' + str(index) + ')"'
             # Cas spécial pour les as qui doivent être retirés
             else:
-                mainHtml += ('<td id="case' + str(index)
-                             + '" onclick="clic(' + str(index) + ')">'
-                             + '</td>')
+                mainHtml += '<td id="case' + str(index) + '" onclick="clic(' +\
+                    str(index) + ')"' + '></td>'
                 paquetMelange[index] = 0
             index += 1
 
@@ -192,13 +172,11 @@ def aideJoueur(paquetMelange):
                 # comparativement à la carte voisinant une carte vide, le fond
                 # de la carte comparée deviendra vert lime, indiquant qu'elle
                 # peut être déplacée.
-                if (
-                    ((n + 1) % 13 != 0) and carte != 0
-                        and carteComparee != 0
-                        and carte != carteComparee
-                        and carte % 4 == carteComparee % 4
-                        and carte//4 == carteComparee//4-1
-                ):
+                if ((n + 1) % 13 != 0) and carte != 0 \
+                        and carteComparee != 0 \
+                        and carte != carteComparee \
+                        and carte % 4 == carteComparee % 4 \
+                        and carte//4 == carteComparee//4-1:
                     carteMobile = elem(j)
                     tabLime.append(j)
                     carteMobile.setAttribute("style", 'background-color: lime')
@@ -208,8 +186,8 @@ def aideJoueur(paquetMelange):
                 # déplacées et donc leur fond deviendra vert lime.
                 elif ((n + 1) % 13 == 0) or paquetMelange[0] == 0:
                     for i in range(52):
-                        if (paquetMelange[i] in [4, 5, 6, 7]
-                                and len(tabLime2) < 4):
+                        if paquetMelange[i] in [4, 5, 6, 7] \
+                                and len(tabLime2) < 4:
                             deux = elem(i)
                             deux.setAttribute(
                                 "style", 'background-color: lime')
@@ -223,24 +201,23 @@ def aideJoueur(paquetMelange):
 def clic(n):
     elem(n).removeAttribute('style')
     for i in range(52):
-        if (paquetMelange[i] != 0
-                and int(paquetMelange[n]) - 4 == int(paquetMelange[i])
-                and n in tabLime):
+        if paquetMelange[i] != 0 \
+                and int(paquetMelange[n]) - 4 == int(paquetMelange[i]) \
+                and n in tabLime:
             posVide = i + 1
-            elem(posVide).innerHTML = ('<img src='
-                                       + str(tabSVG[paquetMelange[n]])
-                                       + '>')
+            elem(posVide).innerHTML = "<img src=" + \
+                str(tabSVG[paquetMelange[n]]) + ">"
             elem(n).innerHTML = ""
             paquetMelange[i+1] = paquetMelange[n]
             paquetMelange[n] = 0
             break
 
-        elif ((i == 0 or i % 13 == 0) and paquetMelange[i] == 0
-                and n in tabLime
-                and paquetMelange[n] in [4, 5, 6, 7]):
+        elif (i == 0 or i % 13 == 0) and paquetMelange[i] == 0 \
+                and n in tabLime \
+                and paquetMelange[n] in [4, 5, 6, 7]:
             posVide = i
-            elem(posVide).innerHTML = ("<img src=" +
-                                       str(tabSVG[paquetMelange[n]]) + ">")
+            elem(posVide).innerHTML = "<img src=" + \
+                str(tabSVG[paquetMelange[n]]) + ">"
             elem(n).innerHTML = ""
             paquetMelange[i] = paquetMelange[n]
             paquetMelange[n] = 0
@@ -265,4 +242,4 @@ def gameOver():
 # def WinCondition():
 
 
-init()
+# init()
