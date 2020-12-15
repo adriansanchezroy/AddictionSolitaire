@@ -33,20 +33,28 @@ def tabCartes():
 def shuffleCartes():
     global paquetMelange
     global nbreShuffle
+    # Décremente le nombre total de brassages restants,
+    # initialisé à nbrShuffle = 4
     nbreShuffle -= 1
-    paquetMelange = tabCartes()  # Variable pour le tableau de cartes mélangées
-    # qui sera retourné par cette fonction
+    # Contient le tableau de cartes mélangées
+    paquetMelange = tabCartes()
 
     for i in range(len(paquetMelange)-1, -1, -1):
+        # Génere un index pseudo-random
         index = math.floor(random() * (i+1))
+        # contient la carte à melanger
         temp = paquetMelange[i]
+        # déplace une carte au hasard à la position de la carte à mélanger
         paquetMelange[i] = paquetMelange[index]
+        # déplace la carte à mélanger à la position de la carte au hasard
         paquetMelange[index] = temp
 
     return paquetMelange
 
 
 # Procédure pour brasser les cartes
+# fonction appelée par le document HTML
+# Ne prends pas d'arguments
 def brassage():
     shuffleCartes()
     document.querySelector('#main').innerHTML = styleHTML + afficherGrille()
@@ -152,6 +160,7 @@ def afficherGrille():
                 paquetMelange[index] = 0
             index += 1
 
+    # Ferme la balise de rangée de tableau
     mainHtml += '</tr>'
     # Balise le cartes dans un élément <table>
     mainHtml = table(mainHtml)
@@ -166,12 +175,12 @@ def afficherGrille():
 # shuffleCartes. Cette procédure aide le joueur en surlignant en vert lime
 # les cartes qui peuvent être déplacées.
 def aideJoueur(paquetMelange):
-    global tabLime
+    global tabCartesDeplaceables
     global carteSelectionnee
     carteSelectionnee = 0
-    tabLime = []   # Variable du tableau contenant la position
+    tabCartesDeplaceables = []   # Variable du tableau contenant la position
     # des cartes pouvant être déplacées
-    tabLime2 = []  # Variable du tableau contenant la position des
+    tabDeuxDeplaceables = []  # Variable du tableau contenant la position des
     # 2 pouvant être déplacées
 
     n = 0  # Compteur permettant de référencer chaque index
@@ -200,7 +209,7 @@ def aideJoueur(paquetMelange):
                         and carte//4 == carteComparee//4-1
                 ):
                     carteMobile = elem(j)
-                    tabLime.append(j)
+                    tabCartesDeplaceables.append(j)
                     carteMobile.setAttribute("style", 'background-color: lime')
                     carteSelectionnee += 1
                 # Cas spécial pour traiter d'un début de rangée vide. Dans ce
@@ -209,15 +218,15 @@ def aideJoueur(paquetMelange):
                 elif ((n + 1) % 13 == 0) or paquetMelange[0] == 0:
                     for i in range(52):
                         if (paquetMelange[i] in [4, 5, 6, 7]
-                                and len(tabLime2) < 4):
+                                and len(tabDeuxDeplaceables) < 4):
                             deux = elem(i)
                             deux.setAttribute(
                                 "style", 'background-color: lime')
-                            tabLime2.append(i)
+                            tabDeuxDeplaceables.append(i)
                             carteSelectionnee += 1
 
         n += 1
-    tabLime = tabLime + tabLime2
+    tabCartesDeplaceables = tabCartesDeplaceables + tabDeuxDeplaceables
 
 
 def clic(n):
@@ -225,7 +234,7 @@ def clic(n):
     for i in range(52):
         if (paquetMelange[i] != 0
                 and int(paquetMelange[n]) - 4 == int(paquetMelange[i])
-                and n in tabLime):
+                and n in tabCartesDeplaceables):
             posVide = i + 1
             elem(posVide).innerHTML = ('<img src='
                                        + str(tabSVG[paquetMelange[n]])
@@ -236,7 +245,7 @@ def clic(n):
             break
 
         elif ((i == 0 or i % 13 == 0) and paquetMelange[i] == 0
-                and n in tabLime
+                and n in tabCartesDeplaceables
                 and paquetMelange[n] in [4, 5, 6, 7]):
             posVide = i
             elem(posVide).innerHTML = ("<img src=" +
@@ -246,8 +255,8 @@ def clic(n):
             paquetMelange[n] = 0
             break
 
-    for i in range(len(tabLime)):
-        index = tabLime[i]
+    for i in range(len(tabCartesDeplaceables)):
+        index = tabCartesDeplaceables[i]
         elem(index).removeAttribute('style')
 
     aideJoueur(paquetMelange)
@@ -261,8 +270,6 @@ def gameOver():
         alert("Vous avez perdu !")
 
 
-#
 # def WinCondition():
-
 
 init()
