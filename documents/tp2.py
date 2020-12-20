@@ -33,12 +33,15 @@ def tabCartes():
 def shuffleInit():
     # Conserve la position des cartes affichée pour la partie en cours
     global paquetMelange
+
     # Maintient le nombre de brassage effectués
     global nbreShuffle
+
     # Décremente le nombre total de brassages restants,
     # initialisé à nbrShuffle = 4
     nbreShuffle -= 1
-    # Initialise le paquet qui sera melangé
+
+    # Initialise le paquet qui sera ensuite melangé
     paquetMelange = tabCartes()
 
     # Brassage des cartes
@@ -145,7 +148,7 @@ def boutonsHTML():
         <div id="message">Vous pouvez encore
         <button onclick="brassage();">brasser les cartes </button>
         """ + str(nbreShuffle) + """
-            "fois<br><button onclick="init()">Nouvelle partie </button></div>
+            fois<br><button onclick="init()">Nouvelle partie </button></div>
         """
 
     else:
@@ -166,7 +169,7 @@ def elem(n):
 # Procédure pour initialiser le jeu et pour brasser les cartes
 def init():
     global nbreShuffle
-    nbreShuffle = 100
+    nbreShuffle = 4
     shuffleInit()
     document.querySelector('#main').innerHTML = styleHTML + afficherGrille()
     aideJoueur(paquetMelange)
