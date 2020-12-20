@@ -27,18 +27,21 @@ def tabCartes():
     return tabCartes
 
 
-# Fonction qui brasse aléatoirement le tableau retourné par la fonction
-# tabCartes(). Le tableau retourné sera utilisé afin d'identifier
-# les cartes.
-def shuffleCartes():
+# Fonction qui brasse aleatoirement toutes les cartes au lancement du jeu.
+# Retourne un tableau de 4 rangees de 13 colonnes
+# Ne prend aucun argument
+def shuffleInit():
+    # Conserve la position des cartes affichée pour la partie en cours
     global paquetMelange
+    # Maintient le nombre de brassage effectués
     global nbreShuffle
     # Décremente le nombre total de brassages restants,
     # initialisé à nbrShuffle = 4
     nbreShuffle -= 1
-    # Contient le tableau de cartes mélangées
+    # Initialise le paquet qui sera melangé
     paquetMelange = tabCartes()
 
+    # Brassage des cartes
     for i in range(len(paquetMelange)-1, -1, -1):
         # Génere un index pseudo-random
         index = math.floor(random() * (i+1))
@@ -48,11 +51,58 @@ def shuffleCartes():
         paquetMelange[i] = paquetMelange[index]
         # déplace la carte à mélanger à la position de la carte au hasard
         paquetMelange[index] = temp
-
     return paquetMelange
 
 
-# Procédure pour brasser les cartes
+# Fonction qui brasse aléatoirement les cartes mal placées.
+# N'est pas appelée au lancement du jeu. Est appelée sur clic du bouton
+# "brasser les cartes". Ne prend aucun argument
+def shuffleCartes():
+    global paquetMelange
+    global nbreShuffle
+
+    # Indices des cartes qui ne doivent pas etre brassees
+    indicesConserves = []
+    for i in range(len(paquetMelange)-1):
+        if (
+            # premieres cartes d'une ligne sont des deux
+            i % 13 == 0 and paquetMelange[i] // 4 == 1
+        ):
+            # Sauvegarde l'index du 2 en premiere colonne
+            indicesConserves.append(i)
+            counter = 1
+            # Verifie si les cartes suivantes sont bien placées
+            while (
+                # tant que les cartes sont consecutives de meme famille
+                paquetMelange[i + counter] == paquetMelange[i + \
+                                                            (counter-1)] + 4
+                # et tant que les cartes sont sur la meme ligne
+                and i // 13 == (i+counter) // 13
+            ):
+                indicesConserves.append(i+counter)
+                counter += 1
+
+        # Brasse les cartes restantes dans les autres cas
+        else:
+            # Pas de brassage si les cartes sont bien placées
+            if i in indicesConserves:
+                continue
+            else:
+                # Génere un index pseudo-random
+                index = math.floor(random() * (i+1))
+                while index in indicesConserves:
+                    index = math.floor(random() * (i+1))
+                # contient la carte à melanger
+                temp = paquetMelange[i]
+                # déplace une carte au hasard à la position de la carte à mélanger
+                paquetMelange[i] = paquetMelange[index]
+                # déplace la carte à mélanger à la position de la carte au hasard
+                paquetMelange[index] = temp
+    nbreShuffle -= 1
+    return paquetMelange
+
+
+# Procédure pour afficher les cartes brassées
 # fonction appelée par le document HTML
 # Ne prends pas d'arguments
 def brassage():
@@ -71,18 +121,18 @@ def table(contenu): return '<table>' + contenu + '</table>'
 
 # Variable pour le style css
 styleHTML = """
-<style> 
+<style>
 #jeu table {
-    float: none; 
-} 
+    float: none;
+}
 
-#jeu table td { 
+#jeu table td {
     border: 0;
     padding: 1px 2px;
     height: auto;
 }
 #jeu table td img {
-    height: auto; 
+    height: auto;
 }
 </style>
 """
@@ -116,8 +166,8 @@ def elem(n):
 # Procédure pour initialiser le jeu et pour brasser les cartes
 def init():
     global nbreShuffle
-    nbreShuffle = 4
-    shuffleCartes()
+    nbreShuffle = 100
+    shuffleInit()
     document.querySelector('#main').innerHTML = styleHTML + afficherGrille()
     aideJoueur(paquetMelange)
 
@@ -151,7 +201,7 @@ def afficherGrille():
                              + '<img src="' + str(tabSVG[indexVal]) + '">'
                              + ' </td>')
 
-               #'" onclick="clic(' + str(index) + ')"'
+               # '" onclick="clic(' + str(index) + ')"'
             # Cas spécial pour les as qui doivent être retirés
             else:
                 mainHtml += ('<td id="case' + str(index)
@@ -261,15 +311,127 @@ def clic(n):
 
     aideJoueur(paquetMelange)
     gameOver()
+    winCondition()
 
 
-#
+# Fonction qui met fin au jeu si aucun coup n'est possible
+# Ne prend aucun argument
 def gameOver():
     global nbreShuffle
     if nbreShuffle == 0 and carteSelectionnee == 0:
         alert("Vous avez perdu !")
 
 
-# def WinCondition():
+# Retourne vrai si toutes les cartes sont en ordre sur toutes les rangées
+# de la grille d'affichage
+# Prend le numero de la range en argument. Les rangees sont comptabilisées
+# à partir de 0
+def cartesEnOrdre(rangee):
+    # Offset auquel counter est additionne pour parcourir les cartes d'une
+    # rangee
+    offsetRangee = rangee * 13
+
+    # permet de consulter une carte et la suivante
+    counter = 0
+
+    # Index maximal pour lequel une carte doit etre placee
+    indexMax = offsetRangee + 12
+
+    cartesOrdonnees = 0
+    # Verifie si les cartes sont:
+    # 1. de valeur consecutives
+    # 2. sont sur la meme ligne
+
+    while (
+        # Itere sur toutes les cartes d'une rangee
+        offsetRangee + counter + 1 <= indexMax
+    ):
+        # Index de la
+        # carte la plus elevée présentement sélectionnée
+        indexCarteCourante = offsetRangee + counter
+        indexCarteSuivante = offsetRangee + counter + 1
+
+        valCarteCourante = paquetMelange[indexCarteCourante]
+        valCarteSuivante = paquetMelange[indexCarteSuivante]
+        # Si la carte suivante est un As ou que la carte suivante
+        # n'est pas consecutive
+        if (
+            paquetMelange[indexCarteCourante] // 4 == 1
+            and indexCarteCourante % 13 == 0
+        ):
+            cartesOrdonnees += 1
+            print("checked for position 0 in rangee", rangee)
+        elif (valCarteCourante + 4 == valCarteSuivante):
+            cartesOrdonnees += 1
+        elif (
+            paquetMelange[offsetRangee] // 4 != 1
+            or valCarteSuivante < 4
+            or valCarteCourante + 4 != valCarteSuivante
+        ):
+            print("Returned False!", "Nombre de cartes ordonnees:",
+                  cartesOrdonnees, "pour la rangee:", rangee)
+            carteOrdonnees = 0
+            return False
+
+        # si on atteint la position 11 d'une rangee, elle est en ordre
+        if cartesOrdonnees == 12:
+            print("Rangee:", rangee, "est en ordre!")
+            return True
+        counter += 1
+        print("Nombre de cartes ordonnees:",
+              cartesOrdonnees, "pour la rangee:", rangee)
+
+
+# Retourne vrai si les cartes sont en ordre dans les 4 rangees.
+# Ne prend aucun argument
+def winCondition():
+    # Statut de la partie en cours
+    victoire = False
+
+    # Accumule le nombre de rangées en ordre
+    nbRangeeEnOrdre = 0
+
+    # Vérifie que les rangées sont en ordre
+    for rangee in range(4):
+        if rangeeOrdonnee(rangee) == True:
+            nbRangeeEnOrdre += 1
+
+    # Une victoire est représentée par 4 rangées en ordre
+    if nbRangeeEnOrdre == 4:
+        victoire = True
+        alert("Victoire!")
+
+    return victoire
+
+
+def rangeeOrdonnee(rangee):
+    # Offset auquel counter est additionne pour parcourir les cartes d'une
+    # rangee
+    offsetRangee = rangee * 13
+    indexProchaineRangee = offsetRangee + 13
+    carteRangee = paquetMelange[offsetRangee:indexProchaineRangee]
+    print("Rangee de cartes: ", rangee, carteRangee)
+
+    # si la premiere carte est un deux et que la derniere est vide
+    if (carteRangee[0] // 4 == 1) and carteRangee[-1] == 0:
+
+        # On sait que deux cartes dont deja bien placees
+        cartesOrdonnees = 2
+
+        # compare les cartes du 3 au roi pour une rangee
+        for i in range(1, 11):
+            if carteRangee[i] + 4 == carteRangee[i+1]:
+                cartesOrdonnees += 1
+                print("Cartes ordonnees:", cartesOrdonnees)
+                continue
+            else:
+                print("non-consecutive cards in line")
+                return False
+    else:
+        print("line", rangee, "not starting with 2 or ending with As")
+        return False
+    if cartesOrdonnees == 12:
+        return True
+
 
 init()
