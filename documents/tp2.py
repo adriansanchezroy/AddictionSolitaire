@@ -322,66 +322,6 @@ def gameOver():
         alert("Vous avez perdu !")
 
 
-# Retourne vrai si toutes les cartes sont en ordre sur toutes les rangées
-# de la grille d'affichage
-# Prend le numero de la range en argument. Les rangees sont comptabilisées
-# à partir de 0
-def cartesEnOrdre(rangee):
-    # Offset auquel counter est additionne pour parcourir les cartes d'une
-    # rangee
-    offsetRangee = rangee * 13
-
-    # permet de consulter une carte et la suivante
-    counter = 0
-
-    # Index maximal pour lequel une carte doit etre placee
-    indexMax = offsetRangee + 12
-
-    cartesOrdonnees = 0
-    # Verifie si les cartes sont:
-    # 1. de valeur consecutives
-    # 2. sont sur la meme ligne
-
-    while (
-        # Itere sur toutes les cartes d'une rangee
-        offsetRangee + counter + 1 <= indexMax
-    ):
-        # Index de la
-        # carte la plus elevée présentement sélectionnée
-        indexCarteCourante = offsetRangee + counter
-        indexCarteSuivante = offsetRangee + counter + 1
-
-        valCarteCourante = paquetMelange[indexCarteCourante]
-        valCarteSuivante = paquetMelange[indexCarteSuivante]
-        # Si la carte suivante est un As ou que la carte suivante
-        # n'est pas consecutive
-        if (
-            paquetMelange[indexCarteCourante] // 4 == 1
-            and indexCarteCourante % 13 == 0
-        ):
-            cartesOrdonnees += 1
-            print("checked for position 0 in rangee", rangee)
-        elif (valCarteCourante + 4 == valCarteSuivante):
-            cartesOrdonnees += 1
-        elif (
-            paquetMelange[offsetRangee] // 4 != 1
-            or valCarteSuivante < 4
-            or valCarteCourante + 4 != valCarteSuivante
-        ):
-            print("Returned False!", "Nombre de cartes ordonnees:",
-                  cartesOrdonnees, "pour la rangee:", rangee)
-            carteOrdonnees = 0
-            return False
-
-        # si on atteint la position 11 d'une rangee, elle est en ordre
-        if cartesOrdonnees == 12:
-            print("Rangee:", rangee, "est en ordre!")
-            return True
-        counter += 1
-        print("Nombre de cartes ordonnees:",
-              cartesOrdonnees, "pour la rangee:", rangee)
-
-
 # Retourne vrai si les cartes sont en ordre dans les 4 rangees.
 # Ne prend aucun argument
 def winCondition():
@@ -404,31 +344,41 @@ def winCondition():
     return victoire
 
 
+# Retourne vrai si toutes les cartes sont en ordre sur toutes les rangées
+# de la grille d'affichage
+# Prend le numero de la range en argument. Les rangees sont comptabilisées
+# à partir de 0
 def rangeeOrdonnee(rangee):
     # Offset auquel counter est additionne pour parcourir les cartes d'une
     # rangee
     offsetRangee = rangee * 13
-    indexProchaineRangee = offsetRangee + 13
-    carteRangee = paquetMelange[offsetRangee:indexProchaineRangee]
-    print("Rangee de cartes: ", rangee, carteRangee)
 
-    # si la premiere carte est un deux et que la derniere est vide
-    if (carteRangee[0] // 4 == 1) and carteRangee[-1] == 0:
+    # Limite superieure (exclusive) des indices à vérifier
+    indexProchaineRangee = offsetRangee + 13
+
+    # tableau contenant les cartes d'une rangee
+    cartesRangee = paquetMelange[offsetRangee:indexProchaineRangee]
+
+    # Condition necessaire a la victoire
+    # Si la premiere carte est un deux et que la derniere est vide.
+    if (cartesRangee[0] // 4 == 1) and cartesRangee[-1] == 0:
 
         # On sait que deux cartes dont deja bien placees
         cartesOrdonnees = 2
 
-        # compare les cartes du 3 au roi pour une rangee
-        for i in range(1, 11):
-            if carteRangee[i] + 4 == carteRangee[i+1]:
+        # compare chaque carte et la suivante à partir de la carte suivant
+        # celle de valeur 2
+        for index in range(1, 11):
+            # Si une carte et la suivante sont consécutives et de meme famille
+            if cartesRangee[index] + 4 == cartesRangee[index+1]:
                 cartesOrdonnees += 1
-                print("Cartes ordonnees:", cartesOrdonnees)
                 continue
+            # Si des cartes ne sont pas dans le bon ordre
             else:
-                print("non-consecutive cards in line")
                 return False
+
+    # la rangee n'est pas en ordre
     else:
-        print("line", rangee, "not starting with 2 or ending with As")
         return False
     if cartesOrdonnees == 12:
         return True
